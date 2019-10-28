@@ -86,4 +86,3 @@ var_dump($result);
     echo "<p>$student->prezStud</p>";
 }*/
 
-
