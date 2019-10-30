@@ -15,7 +15,7 @@ class DB{
         $pass = $this->config[$driver]['pass'];
         $db = $this->config[$driver]['db'];
         $charset = $this->config[$driver]['charset'];
-        $dsn = "$driver:dbname=$db;host=$host";
+        $dsn = "$driver:dbname=$db;host=$host;charset=$charset";
         try {
             $this->connection = new PDO($dsn,$user,$pass);
             //echo "Connected successfully";
@@ -75,6 +75,10 @@ class DB{
     public function select($fields, $table, $where = array()){
         return $this->action("SELECT $fields", $table, $where);
     }
+    public function getById($fields, $table, $id){
+        return $this->action("SELECT $fields FROM $table WHERE id=?", [$id]);
+    }
+
     public function insert($table, $columns){
 
         $keys = array_keys($columns);

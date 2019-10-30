@@ -10,7 +10,7 @@ class Mjesec extends Datum{
         $mjesec = date('n',strtotime($date));
         $mjesec--;
         $ime_mjeseca = $this->mjeseci[$mjesec];
-        return "Danas je dan " . $this->getDayName($date) . " u mjesecu $ime_mjeseca";
+        return "Tada je bio dan " . $this->getDayName($date) . " u mjesecu $ime_mjeseca";
 
     }
 

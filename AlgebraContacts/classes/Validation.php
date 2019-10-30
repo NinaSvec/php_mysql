@@ -26,25 +26,39 @@ class Validation{
                             }
                             break;
                         case 'max':
-                             if (strlen($input_value) < $rule_value) {
-                                 $this->addError($input, "Field $input must have minimum of $rule_value characters.");
-                            break;
+                             if (strlen($input_value) > $rule_value) {
+                                 $this->addError($input, "Field $input must have maximum of $rule_value characters.");
+                             }break;
                         case 'unique':
-                            # code...
+                        //SELECT * FROM users WHERE username = $input_value; 
+                            $check = $this->db->select('*', $rule_value, [$input, '=', $input_value]);
+                            if ($check->count()){
+                                $this->addError($input, "$input $input_value already exists.");
+                            }
                             break;
                         case 'matches':
-                            # code...
+                            # DZ - provjeriti da li se polje pass i pass confirmation podudaraju
+                            # ako ne upisati grešku
+                            # pripaziti da vrijedi za sve forme
                             break;
                         case 'pattern':
-                            # code...
+                            //if (!preg_match(Config::get('app')['register_password_regex'], $input_value)){
+                             //   $this->addError($input, "Field $input must include at least one Upper case and one Lower case, one number and one special character.");
+                            //}
+                            // DZ provjeriti uvjet za password sa php ugrađenim funkcijama
+                           // ctype_alnum()
                             break;
-                        default:
-                            # code...
-                            break;
-                    }
+                        
+                        } 
                 }
             }
         }
+
+        if (empty($this->errors)){
+            $this->passed = true;
+        }
+
+        return $this;
     }
 
     private function addError($input, $error){
