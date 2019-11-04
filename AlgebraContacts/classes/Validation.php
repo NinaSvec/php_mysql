@@ -9,6 +9,7 @@ class Validation{
     public function __construct(){
         $this->db = DB::getInstance();
     }
+
     public function check($inputs = array()){
         foreach ($inputs as $input => $rules) {
             foreach ($rules as $rule => $rule_value) {
@@ -17,44 +18,57 @@ class Validation{
 
                 if ($rule === 'required' && empty($input_value)) {
                     $this->addError($input, "Field $input is required.");
-                }
-                elseif(!empty($input_value)){
+                }elseif(!empty($input_value)){
                     switch ($rule) {
                         case 'min':
-                            if (strlen($input_value) < $rule_value) {
+                            if (strlen($input_value) < $rule_value ) {
                                 $this->addError($input, "Field $input must have minimum of $rule_value characters.");
                             }
                             break;
                         case 'max':
-                             if (strlen($input_value) > $rule_value) {
-                                 $this->addError($input, "Field $input must have maximum of $rule_value characters.");
-                             }break;
+                            if (strlen($input_value) > $rule_value ) {
+                                $this->addError($input, "Field $input must have maximum of $rule_value characters.");
+                            }
+                            break;
                         case 'unique':
-                        //SELECT * FROM users WHERE username = $input_value; 
+                        // SELECT * FRM users WHERE username = $input_value
                             $check = $this->db->select('*', $rule_value, [$input, '=', $input_value]);
-                            if ($check->count()){
+                            if($check->count()){
                                 $this->addError($input, "$input $input_value already exists.");
                             }
                             break;
                         case 'matches':
-                            # DZ - provjeriti da li se polje pass i pass confirmation podudaraju
-                            # ako ne upisati grešku
-                            # pripaziti da vrijedi za sve forme
+                            # DZ - provjeriti da li se polje password i polje password_confirmation
+                            # podudaraju, ako  ne upisati grešku
+                            # pripazit da vrijedi za sve forme!!!
+
+                            if ($_POST["password"] != $_POST["password_confirmation"]) {
+                                $this->addError($input, "Field Confirm password must match field Password");
+                             }
                             break;
                         case 'pattern':
-                            //if (!preg_match(Config::get('app')['register_password_regex'], $input_value)){
-                             //   $this->addError($input, "Field $input must include at least one Upper case and one Lower case, one number and one special character.");
-                            //}
-                            // DZ provjeriti uvjet za password sa php ugrađenim funkcijama
-                           // ctype_alnum()
+                                    //$regex = array(Config::get('app')['register_password_regex']);
+                                   /* if(ctype_alnum('register_password_regex', $input_value) {
+                                        $this->addError($input, "Field $input must include at least one Upper case and one Lower case, one number and one special character.")
+                                    }*/
+                                
+                                    /*if (!preg_match(Config::get('app')['register_password_regex'], $input_value)) {
+                                        $this->addError($input, "Field $input must include at least one Upper case and one Lower case, one number and one special character.");
+                                    }
+                            Config::get('app')['register_password_regex'];  */
+                                if(!ctype_alnum($input_value)){
+                                    $this->addError($input, "Field $input must include at least one Upper case and one Lower case, one number and one special character.");
+                            }
+                            // ctype_alnum()
+                            // DZ - provjeriti uvjet za password sa php ugradenim funkcijama
+                            // ctype_alnum()
                             break;
-                        
-                        } 
+                     
+                        }
                 }
             }
         }
-
-        if (empty($this->errors)){
+        if (empty($this->errors)) {
             $this->passed = true;
         }
 
@@ -66,7 +80,7 @@ class Validation{
     }
 
     public function hasError($input){
-        if(isset($this->errors[$input])){
+        if (isset($this->errors[$input])) {
             return $this->errors[$input];
         }
         return false;
