@@ -4,12 +4,10 @@ class Config{
 
     public static function get($path = null){
 
-        if ($path) {
+        if($path){
             $items = require "config/$path.php";
             return $items;
-
-        } 
-            return false;
-        
+        }
+        return false;
     }
 }

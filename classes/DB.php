@@ -1,5 +1,7 @@
 <?php
+
 class DB{
+
     private static $instance = null;
     private $connection;
     private $connection_prepare;
@@ -18,11 +20,11 @@ class DB{
         $pass = $this->config[$driver]['pass'];
         $db = $this->config[$driver]['db'];
         $charset = $this->config[$driver]['charset'];
-        $dsn = "$driver:dbname=$db;host=$host";
+        $dsn = "$driver:dbname=$db;host=$host;charset=$charset";
 
         try {
             $this->connection = new PDO($dsn,$user,$pass);
-            echo "Connected successfully";
+            //echo "Connected successfully";
         } catch (PDOException $e) {
             die($e->getMessage());
         }
@@ -38,10 +40,12 @@ class DB{
     }
 
     private function action($action, $table, $where = array()){
+
         if ($where) {
             $field = $where[0];
             $operator = $where[1];
             $value = $where[2];
+
             $sql = "$action FROM $table WHERE $field $operator ?";
             if(!$this->query($sql, array($value))->error){
                 return $this;
@@ -57,8 +61,11 @@ class DB{
     }
 
     private function query($sql, $params = array()){
+
         $this->error = false;
+
         if($this->connection_prepare = $this->connection->prepare($sql)){
+
             $counter = 1;
             if (!empty($params)) {
                 foreach ($params as $param) {
@@ -85,20 +92,57 @@ class DB{
         return $this->action("SELECT $fields", $table, $where);
     }
 
+    public function getById($fields, $table, $id){
+        return $this->query("SELECT $fields FROM $table WHERE id=?", [$id]);
+    }
+
     public function insert($table, $columns){
-        // INSERT INTO users (name,username,password) VALUES ('?','?','?');
-        $sql = "INSERT INTO $table ($columns->ključevi) VALUES ($columns->vrijednosti)";
+
+        $keys = array_keys($columns);
+        $keys = implode(',', $keys);
+        $questionmarks = '';
+        $arr_lenght = count($columns);
+        $counter = 1;
+
+        foreach ($columns as $key => $value) {
+            $questionmarks .= '?';
+            if ($counter < $arr_lenght ) {
+                $questionmarks .= ',';
+            }
+            $counter++;
+        }
+        // INSERT INTO users (name,username,password) VALUES (?,?,?);
         //DZ - složiti $sql i $values array sa vrijednostima
-        if(!$this->query($sql, $values)->error){
+        $sql = "INSERT INTO $table ($keys) VALUES ($questionmarks)";
+
+        if(!$this->query($sql, $columns)->error){
             return $this;
         }
         return false;
     }
 
     public function update($table, $id, $fields){
+
+        $questionmarks = '';
+        $arr_lenght = count($fields);
+        $counter = 1;
+
+        foreach ($fields as $key => $value) {
+            $questionmarks .= "$key=?";
+            if ($counter < $arr_lenght ) {
+                $questionmarks .= ',';
+            }
+            $counter++;
+        }
+
+        $sql = "UPDATE $table SET $questionmarks WHERE id=$id";
+
+        if(!$this->query($sql, $fields)->error){
+            return $this;
+        }
+        return false;
     }
-    
-    /* GETTERI */
+
     public function error(){
         return $this->error;
     }
@@ -108,32 +152,7 @@ class DB{
     public function count(){
         return $this->count;
     }
-    
-
+    public function first(){
+        return $this->results[0];
+    }
 }
-
-
-$db = DB::getInstance();
-//$result = $db->delete('users', ['id', '=', 1]);
-//$result = $db->select('name', 'users', ['id', '=', 3]);
-//$result = $db->select('*', 'users');
-//var_dump($result);
-
-/*DOMAĆA ZADAĆA
-$result = $db->insert('users', [
-    'username'  => 'alex',
-    'password'  => 'pass',
-    'salt'      => 'asdfasdasdasdsadas',
-    'name'      => 'Aleksandar',
-    'role_id'   => 1
-]);
-    
-    public function deleteStudentById($mbrStud){
-        return $this->action("DELETE FROM stud WHERE mbrStud = $mbrStud");
-    }
-    public function deleteById($table, $id){
-        return $this->action("DELETE FROM $table WHERE id = $id");
-    }
-    */
-
-//$result = $db->update('users', 3, 'ime=Ivan');
